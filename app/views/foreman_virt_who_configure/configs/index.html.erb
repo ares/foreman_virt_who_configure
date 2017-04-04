@@ -7,6 +7,7 @@
     <tr>
       <th class="col-md-8"><%= sort :name, :as => s_("Config|Title") %></th>
       <th><%= s_("Config|Interval") %></th>
+      <th class="col-md-2"><%= _("Status") %></th>
       <th><%= _('Actions') %></th>
     </tr>
   </thead>
@@ -15,6 +16,7 @@
     <tr>
       <td class="display-two-pane ellipsis"><%= link_to_if_authorized (config.title), hash_for_foreman_virt_who_configure_config_path(:id => config).merge(:auth_object => config, :authorizer => authorizer) %></td>
       <td><%= config.humanized_interval %></td>
+      <td><%= config_report_status(config) %></td>
       <td class="col-md-1"><%= action_buttons(
                                    display_link_if_authorized(_('Edit'), hash_for_edit_foreman_virt_who_configure_config_path(:id => config).merge(:auth_object => config, :authorizer => authorizer)),
                                    display_delete_if_authorized((hash_for_foreman_virt_who_configure_config_path(:id => config).merge(:auth_object => config, :authorizer => authorizer)), :data => { :confirm => _("Delete virt-who configuration %s?") % config.title })

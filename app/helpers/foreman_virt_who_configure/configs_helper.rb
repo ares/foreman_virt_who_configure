@@ -21,5 +21,47 @@ module ForemanVirtWhoConfigure
         'libvirt' => _('Account name by which virt-who is to connect to the hypervisor.')
       }
     end
+
+    def config_report_status(config)
+      status, message, tooltip = case
+                          when config.last_report_at.nil?
+                            [:unknown, _('No Report Yet'), _('The configuration was not deployed yet or the virt-who was unable to report the status')]
+                          when config.delayed?
+                            [:ok, l(config.last_report_at, :format => :long), _('The virt-who report arrived within the interval')]
+                          else
+                            [:error, l(config.last_report_at, :format => :long), _('The virt-who report has not arrived withing the interval, please check the virt-who reporter status and logs')]
+                        end
+
+      content_tag(:span, ''.html_safe, :class => report_status_class(status), :title => tooltip) + '&nbsp;'.html_safe +
+        content_tag(:span, message, :class => status)
+    end
+
+    def report_status_class(status)
+      icon_class = case status
+                     when :ok
+                       'pficon-ok'
+                     when :error
+                       'pficon-error-circle-o'
+                     when :unknown
+                       'pficon-info'
+                     else
+                       'pficon-help'
+                   end
+
+      "virt-who-config-report-status #{icon_class} #{status_class(status)}"
+    end
+
+    def status_class(status)
+      case status
+        when :ok
+          'status-ok'.html_safe
+        when :unknown
+          'status-info'.html_safe
+        when :error
+          'status-error'.html_safe
+        else
+          'status-warn'.html_safe
+      end
+    end
   end
 end

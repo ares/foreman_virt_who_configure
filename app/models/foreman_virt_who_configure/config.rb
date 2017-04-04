@@ -131,6 +131,10 @@ module ForemanVirtWhoConfigure
       _("every %s hours") % (self.interval / 60)
     end
 
+    def delayed?
+      self.last_report_at >= DateTime.now.utc - self.interval.minutes
+    end
+
     def step_name(step_key)
       WIZARD_STEPS[step_key]
     end

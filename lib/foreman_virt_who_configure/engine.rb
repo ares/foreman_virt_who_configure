@@ -7,6 +7,7 @@ module ForemanVirtWhoConfigure
     config.autoload_paths += Dir["#{config.root}/app/controllers/concerns"]
     config.autoload_paths += Dir["#{config.root}/app/helpers/concerns"]
     config.autoload_paths += Dir["#{config.root}/app/models/concerns"]
+    config.autoload_paths += Dir["#{config.root}/app/lib"]
     config.autoload_paths += Dir["#{config.root}/test/"]
 
     # Add any db migrations
@@ -76,9 +77,15 @@ module ForemanVirtWhoConfigure
       SETTINGS[:foreman_virt_who_configure] = { assets: { precompile: assets_to_precompile } }
     end
 
+    initializer 'foreman_virt_who_configure.register_paths' do |_app|
+      ForemanTasks.dynflow.config.eager_load_paths.concat(%W(#{ForemanVirtWhoConfigure::Engine.root}/app/lib/actions))
+    end
+
+
     # Include concerns in this config.to_prepare block
     config.to_prepare do
       SSO::METHODS.unshift SSO::BasicWithHidden
+      Katello::Api::Rhsm::CandlepinProxiesController.send(:include, ForemanVirtWhoConfigure::Concerns::ReportLogger)
     end
 
     rake_tasks do
