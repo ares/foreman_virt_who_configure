@@ -1,0 +1,26 @@
+<h4 class="header ca"><%= _('Out of Date Virt-who Configurations') %></h4>
+
+<% # TODO - move to Config class, keep just that returns org/authorized scope %>
+<% # TODO - css up %>
+<% # TODO - split up to two widgets or somehow separate (could have two headers) %>
+<% # TODO - verify how empty one looks) %>
+<% # TODO - limit the number to e.g. 3 most recent) %>
+<% scope = ForemanVirtWhoConfigure::Config %>
+<% scope = Organization.current ? scope.where(:organization_id => Organization.current) : scope  %>
+<% scope = scope.authorized(:view_virt_who_config) %>
+<% expired = scope.expired.order('expires_at DESC') %>
+
+<ul>
+  <% if expired.empty? %>
+    <li><%= _("No configuration for which the report has not been received during expected interval") %></li>
+  <% else %>
+    <% expired.all.each do |config| %>
+      <li><%= config_report_status(config) %><%= link_to config.title, foreman_virt_who_configure_config_path(config) %></li>
+    <% end %>
+  <% end %>
+  <h4 class="total"><%= _("Configurations Without Single Report: %s") % scope.where(:last_report_at => nil).count %></h4>
+  <h4 class="total"><%= _("Expired Configurations: %s") % expired.count %></h4>
+  <h4 class="total"><%= _("Configurations Up To Date: %s") % (scope.count - expired.count) %></h4>
+  <h4 class="total"><%= _("Total Configurations: %s") % scope.count %></h4>
+</ul>
+

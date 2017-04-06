@@ -80,6 +80,8 @@ module ForemanVirtWhoConfigure
 
     before_validation :remove_whitespaces
 
+    scope :expired, ->(deadline = DateTime.now) { where(["expires_at < ?", deadline.to_s(:db)]) }
+
     def create_service_user
       password = User.random_password
       service_user = self.build_service_user
@@ -131,8 +133,8 @@ module ForemanVirtWhoConfigure
       _("every %s hours") % (self.interval / 60)
     end
 
-    def delayed?
-      self.last_report_at >= DateTime.now.utc - self.interval.minutes
+    def expired?(deadline = DateTime.now)
+      self.expires_at < deadline
     end
 
     def step_name(step_key)
@@ -150,6 +152,12 @@ module ForemanVirtWhoConfigure
       else
         generator.missing_virt_who_input_messages.join("\n")
       end
+    end
+
+    def virt_who_touch!
+      self.last_report_at = DateTime.now
+      self.expires_at = self.last_report_at + self.interval.minutes
+      self.save!
     end
 
     private

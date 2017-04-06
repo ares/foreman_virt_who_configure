@@ -57,7 +57,7 @@ module ForemanVirtWhoConfigure
              after: :compute_resources
 
         # add dashboard widget
-        # widget 'foreman_virt_who_configure_widget', name: N_('Foreman plugin template widget'), sizex: 4, sizey: 1
+        widget 'foreman_virt_who_configs_status_widget', name: N_('Virt-who Configs Status'), sizex: 4, sizey: 1
       end
     end
 
@@ -85,7 +85,6 @@ module ForemanVirtWhoConfigure
     # Include concerns in this config.to_prepare block
     config.to_prepare do
       SSO::METHODS.unshift SSO::BasicWithHidden
-      Katello::Api::Rhsm::CandlepinProxiesController.send(:include, ForemanVirtWhoConfigure::Concerns::ReportLogger)
     end
 
     rake_tasks do

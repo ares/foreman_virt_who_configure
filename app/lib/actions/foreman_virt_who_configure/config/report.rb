@@ -13,22 +13,23 @@ module Actions
         end
 
         def run
-          require 'pry-remote'
-          binding.remote_pry
-          input['hypervisors'].each do |hv_attrs|
-            # should always exist, Actions::Katello::Host::HypervisorsUpdate should create it
-            # but we should be careful anyway
-            hypervisor = ::Katello::Host::SubscriptionFacet.find_by_uuid(hv_attrs['uuid'])
-            hypervisor = ::Host.joins(:subscription_facet).where(:'katello_subscription_facets.uuid' => hv_attrs['uuid']).first
-          end
+          # this is how we could do mapping to hypervisor hosts based on UUID provided by candelpin
+          # input['hypervisors'].each do |hv_attrs|
+          #   # should always exist, Actions::Katello::Host::HypervisorsUpdate should create it
+          #   # but we should be careful anyway
+          #   hypervisor = ::Host.joins(:subscription_facet).where(:'katello_subscription_facets.uuid' => hv_attrs['uuid']).first
+          # end
+
           config = ::ForemanVirtWhoConfigure::ServiceUser.find_by_user_id(User.current.id).try(:config)
           if config.present?
-            config.hypervisor_server # this is the entry point for compute resource
-            config.touch(:last_report_at)
+            config.virt_who_touch!(:last_report_at)
           end
 
-          # todo create a custom status for the host
-          # todo log when there was an incoming report from another config
+          # if config was not found, the report is coming from unknown virt-who reporter, we could create a notification
+          # that this plugin can be used for configuration
+
+          # this could be used for mapping to existing compute resource
+          # config.hypervisor_server
         end
       end
     end

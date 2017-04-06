@@ -26,7 +26,7 @@ module ForemanVirtWhoConfigure
       status, message, tooltip = case
                           when config.last_report_at.nil?
                             [:unknown, _('No Report Yet'), _('The configuration was not deployed yet or the virt-who was unable to report the status')]
-                          when config.delayed?
+                          when !config.expired?
                             [:ok, l(config.last_report_at, :format => :long), _('The virt-who report arrived within the interval')]
                           else
                             [:error, l(config.last_report_at, :format => :long), _('The virt-who report has not arrived withing the interval, please check the virt-who reporter status and logs')]
