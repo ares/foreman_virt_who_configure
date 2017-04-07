@@ -1,7 +1,7 @@
 module ForemanVirtWhoConfigure
   module ConfigsHelper
     def hypervisor_server_help_data
-      {
+      @hypervisor_server_help_data ||= {
         'esx' => _('VMware vCenter server’s fully qualified host name or IP address.'),
         'rhevm' => _('Red Hat Virtualization Manager’s fully qualified host name or IP address. For example, <code>https://hostname:443/ovirt-engine/</code> for v4, <code>https://hostname_or_IP:443</code> for v3'),
         # 'vdsm' => 'Red Hat Enterprise Linux Hypervisor (vdsm)',
@@ -12,7 +12,7 @@ module ForemanVirtWhoConfigure
     end
 
     def hypervisor_username_help_data
-      {
+      @hypervisor_username_help_data ||= {
         'esx' => _('Account name by which virt-who is to connect to the hypervisor, in the format <code>domain_name\account_name</code>. Note that only a single backslash separates the values for domain_name and account_name. If you are using a domain account, and the global configuration file <code>/etc/sysconfig/virt-who</code>, then <b>two</b> backslashes are required. For further details, see <a href="https://access.redhat.com/solutions/1270223">Red Hat Knowledgebase solution How to use a windows domain account with virt-who</a> for more information.'),
         'rhevm' => _('Account name by which virt-who is to connect to the Red Hat Enterprise Virtualization Manager instance. The username option requires input in the format username@domain.'),
         # 'vdsm' => '',
@@ -23,17 +23,22 @@ module ForemanVirtWhoConfigure
     end
 
     def config_report_status(config)
-      status, message, tooltip = case
-                          when config.last_report_at.nil?
-                            [:unknown, _('No Report Yet'), _('The configuration was not deployed yet or the virt-who was unable to report the status')]
-                          when !config.expired?
-                            [:ok, l(config.last_report_at, :format => :long), _('The virt-who report arrived within the interval')]
-                          else
-                            [:error, l(config.last_report_at, :format => :long), _('The virt-who report has not arrived withing the interval, please check the virt-who reporter status and logs')]
-                        end
+      message = case config.status
+                  when :unknown
+                    _('No Report Yet')
+                  when :ok
+                    l(config.last_report_at, :format => :long)
+                  when :error
+                    l(config.last_report_at, :format => :long)
+                  else
+                    _('Unknown configuration status')
+                end
 
-      content_tag(:span, ''.html_safe, :class => report_status_class(status), :title => tooltip) + '&nbsp;'.html_safe +
-        content_tag(:span, message, :class => status)
+      config_report_status_icon(config) + content_tag(:span, message, :class => config.status)
+    end
+
+    def config_report_status_icon(config)
+      content_tag(:span, ''.html_safe, :class => report_status_class(config.status), :title => config.status_description) + '&nbsp;'.html_safe
     end
 
     def report_status_class(status)

@@ -47,6 +47,20 @@ module ForemanVirtWhoConfigure
 
     DEFAULT_INTERVAL = 120
 
+    STATUSES = {
+      'ok' => _('OK'),
+      'error' => _('Error'),
+      'unknown' => _('Unknown')
+    }
+
+    STATUS_DESCRIPTIONS = Hash.new(_('Unknown configuration status, caused by unexpected conditions')).merge(
+      {
+        :unknown => _('The configuration was not deployed yet or the virt-who was unable to report the status'),
+        :ok => _('The virt-who report arrived within the interval'),
+        :error => _('The virt-who report has not arrived within the interval, please check the virt-who reporter status and logs')
+      }
+    )
+
     include Encryptable
     encrypts :hypervisor_password
 
@@ -57,6 +71,9 @@ module ForemanVirtWhoConfigure
     belongs_to :service_user
 
     scoped_search :on => :interval, :complete_value => true
+    scoped_search :on => :status, :complete_value => true, :only_explicit => true, :operators => ['= '], :ext_method => :search_by_status
+    scoped_search :on => :expires_at, :complete_value => true, :only_explicit => true
+    scoped_search :on => :last_report_at, :complete_value => true, :only_explicit => true
     # TODO add more related objects and attributes
 
     # compatibility layer for 1.11 - pre strong params patch
@@ -81,6 +98,19 @@ module ForemanVirtWhoConfigure
     before_validation :remove_whitespaces
 
     scope :expired, ->(deadline = DateTime.now) { where(["expires_at < ?", deadline.to_s(:db)]) }
+    scope :for_organization, ->(org) { org.nil? ? where(nil) : where(:organization_id => org) }
+
+    def self.search_by_status(key, operator, value)
+      condition = case value
+        when 'ok'
+          sanitize_sql_for_conditions([' expires_at >= ? ', DateTime.now.to_s(:db)])
+        when 'unknown'
+          sanitize_sql_for_conditions({ :last_report_at => nil })
+        when 'error'
+          sanitize_sql_for_conditions([' expires_at < ? ', DateTime.now.to_s(:db)])
+      end
+      { :conditions => condition }
+    end
 
     def create_service_user
       password = User.random_password
@@ -158,6 +188,21 @@ module ForemanVirtWhoConfigure
       self.last_report_at = DateTime.now
       self.expires_at = self.last_report_at + self.interval.minutes
       self.save!
+    end
+
+    def status
+      case
+        when self.last_report_at.nil?
+          :unknown
+        when !self.expired?
+          :ok
+        else
+          :error
+      end
+    end
+
+    def status_description
+      STATUS_DESCRIPTIONS[status]
     end
 
     private

@@ -84,7 +84,7 @@ module ForemanVirtWhoConfigure
     private
 
     def apply_organization_filter(scope)
-      Organization.current ? scope.where(:organization_id => Organization.current) : scope
+      scope.for_organization(Organization.current)
     end
 
     def resource_scope(*args)

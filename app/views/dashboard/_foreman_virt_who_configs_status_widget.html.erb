@@ -1,26 +1,59 @@
-<h4 class="header ca"><%= _('Out of Date Virt-who Configurations') %></h4>
-
-<% # TODO - move to Config class, keep just that returns org/authorized scope %>
-<% # TODO - css up %>
-<% # TODO - split up to two widgets or somehow separate (could have two headers) %>
-<% # TODO - verify how empty one looks) %>
-<% # TODO - limit the number to e.g. 3 most recent) %>
-<% scope = ForemanVirtWhoConfigure::Config %>
-<% scope = Organization.current ? scope.where(:organization_id => Organization.current) : scope  %>
+<% scope = ForemanVirtWhoConfigure::Config.for_organization(Organization.current) %>
 <% scope = scope.authorized(:view_virt_who_config) %>
 <% expired = scope.expired.order('expires_at DESC') %>
 
-<ul>
+<h4 class="header ca"><%= _('Virt-who Configurations Statistics') %></h4>
+<table class="table table-striped ellipsis">
+  <thead>
+  <tr>
+    <th><%= _("Status") %></th>
+    <th><%= _("Count") %></th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td><%= link_to _("Configurations Without Single Report"), foreman_virt_who_configure_configs_path(:search => "status = unknown") %></td>
+    <td><%= scope.where(:last_report_at => nil).count %></td>
+  </tr>
+  <tr>
+    <td><%= link_to _("Expired Configurations"), foreman_virt_who_configure_configs_path(:search => "status = error") %></td>
+    <td><%= expired.count %></td>
+  </tr>
+  <tr>
+    <td><%= link_to _("Configurations Up To Date"), foreman_virt_who_configure_configs_path(:search => "status = ok") %></td>
+    <td><%= scope.where.not(:last_report_at => nil).count - expired.count %></td>
+  </tr>
+  <tr>
+    <td><%= link_to _("Total Configurations"), foreman_virt_who_configure_configs_path %></td>
+    <td><%= scope.count %></td>
+  </tr>
+  </tbody>
+</table>
+
+
+<h5 class="ca"><%= _('Out of Date Virt-who Configurations') %></h5>
   <% if expired.empty? %>
-    <li><%= _("No configuration for which the report has not been received during expected interval") %></li>
+  <%= _("No configuration for which the report has not been received during expected interval") %>
   <% else %>
-    <% expired.all.each do |config| %>
-      <li><%= config_report_status(config) %><%= link_to config.title, foreman_virt_who_configure_config_path(config) %></li>
-    <% end %>
+    <table class="table table-striped ellipsis">
+      <thead>
+        <tr>
+          <th><%= s_("Config|Title") %></th>
+          <th><%= s_("Config|Last Report") %></th>
+          <th><%= s_("Config|Interval") %></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% expired.limit(3).each do |config| %>
+          <tr>
+            <td><%= config_report_status_icon(config) %><%= link_to config.title, foreman_virt_who_configure_config_path(config) %></td>
+            <td><%= l(config.last_report_at, :format => :long) %></td>
+            <td><%= config.humanized_interval %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
   <% end %>
-  <h4 class="total"><%= _("Configurations Without Single Report: %s") % scope.where(:last_report_at => nil).count %></h4>
-  <h4 class="total"><%= _("Expired Configurations: %s") % expired.count %></h4>
-  <h4 class="total"><%= _("Configurations Up To Date: %s") % (scope.count - expired.count) %></h4>
-  <h4 class="total"><%= _("Total Configurations: %s") % scope.count %></h4>
-</ul>
+
+
 
