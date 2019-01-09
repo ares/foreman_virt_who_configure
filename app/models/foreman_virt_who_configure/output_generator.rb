@@ -48,7 +48,7 @@ module ForemanVirtWhoConfigure
     end
 
     def virt_who_output(format = nil)
-      kubeconfig = config.hypervisor_type == 'kubevirt' ? "\nkubeconfig=#{config.kubeconfig_path} : ''
+      kubeconfig = config.hypervisor_type == 'kubevirt' ? "\nkubeconfig=#{config.kubeconfig_path}" : ''
       result = ''
       result += "#!/bin/bash\n" if format == :bash_script
       result += <<EOS
@@ -105,8 +105,7 @@ encrypted_password=$cr_password#{filtering}
 rhsm_hostname=#{satellite_url}
 rhsm_username=#{service_user_username}
 rhsm_encrypted_password=$user_password
-rhsm_prefix=/rhsm
-#{kubeconfig}
+rhsm_prefix=/rhsm#{kubeconfig}
 EOF
   if [ $? -ne 0 ]; then result_code=$(($result_code|#{error_code(:virt_who_config_file_issue)})); fi
 

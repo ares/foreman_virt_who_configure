@@ -34,7 +34,7 @@
           <%= config_attribute :status, config_report_status(@config), _('Status') %>
           <%= config_attribute :hypervisor_type, _(ForemanVirtWhoConfigure::Config::HYPERVISOR_TYPES[@config.hypervisor_type]) %>
           <%= config_attribute :hypervisor_server, @config.hypervisor_server %>
-          <%= config_attribute :hypervisor_username, @config.hypervisor_username %>
+          <%= config_attribute :hypervisor_username, @config.hypervisor_username if @config.hypervisor_type != 'kubevirt' %>
           <%= config_attribute :interval, _(ForemanVirtWhoConfigure::Config::AVAILABLE_INTERVALS[@config.interval.to_s]) %>
           <%= config_attribute :satellite_url, @config.satellite_url, _('Satellite server FQDN')%>
           <%= config_attribute :hypervisor_id, @config.hypervisor_id, _('Hypervisor ID') %>
@@ -44,6 +44,7 @@
           <%= config_attribute :debug, checked_icon(@config.debug), _('Enable debugging output?') %>
           <%= config_attribute :proxy, @config.proxy if @config.proxy.present? %>
           <%= config_attribute :no_proxy, @config.no_proxy if @config.no_proxy.present? %>
+          <%= config_attribute :kubeconfig_path, @config.kubeconfig_path if @config.hypervisor_type == 'kubevirt' %>
         </div>
       </div>
     </div>

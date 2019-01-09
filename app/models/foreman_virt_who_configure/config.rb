@@ -6,7 +6,7 @@ module ForemanVirtWhoConfigure
       :satellite_url, :proxy, :no_proxy, :name,
       # API parameter filtering_mode gets translated to listing_mode in the controller
       # We keep both params permitted for compatibility with 1.11
-      :listing_mode, :filtering_mode, :filter_host_parents, :exclude_host_parents
+      :listing_mode, :filtering_mode, :filter_host_parents, :exclude_host_parents, :kubeconfig_path
     ]
     audited :except => [ :hypervisor_password, :last_report_at, :out_of_date_at ], :associations => []
     include Authorizable
@@ -92,11 +92,12 @@ module ForemanVirtWhoConfigure
     after_create :create_service_user
     after_destroy :destroy_service_user
 
-    validates :interval, :hypervisor_type, :hypervisor_server, :hypervisor_username,
+    validates :interval, :hypervisor_type, :hypervisor_server,
               :satellite_url, :hypervisor_id, :organization_id, :name,
               :presence => true
     validates :name, :uniqueness => { :scope => :organization_id }
-    validates :hypervisor_password, :presence => true, :if => Proc.new { |c| c.hypervisor_type != 'libvirt' }
+    validates :hypervisor_password, :presence => true, :if => Proc.new { |c| c.hypervisor_type != 'libvirt' && c.hypervisor_type != 'kubevirt' }
+    validates :hypervisor_username, :presence => true, :if => Proc.new { |c| c.hypervisor_type != 'kubevirt' }
     validates :hypervisor_type, :inclusion => HYPERVISOR_TYPES.keys
     validates :hypervisor_id, :inclusion => HYPERVISOR_IDS
     validates :interval, :inclusion => AVAILABLE_INTERVALS.keys.map(&:to_i)
