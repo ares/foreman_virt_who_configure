@@ -7,7 +7,8 @@ module ForemanVirtWhoConfigure
         # 'vdsm' => 'Red Hat Enterprise Linux Hypervisor (vdsm)',
         'hyperv' => _('Microsoft Hyper-V fully qualified host name or IP address.'),
         'xen' => _('XenServer server’s fully qualified host name or IP address.'),
-        'libvirt' => _('Libvirt server’s fully qualified host name or IP address. You can also specify preferred schema, for example: <code>qemu+ssh://libvirt.example.com/system</code>. If you use SSH, make sure you setup root\'s SSH key on target host for a user specified at hypervisor username field')
+        'libvirt' => _('Libvirt server’s fully qualified host name or IP address. You can also specify preferred schema, for example: <code>qemu+ssh://libvirt.example.com/system</code>. If you use SSH, make sure you setup root\'s SSH key on target host for a user specified at hypervisor username field'),
+        'kubevirt' => _('Container-native virtualization’s fully qualified host name or IP address. In order to connect to the cluster it is required to provide path to kubeconfig which contains connection details and authentication token.')
       }
     end
 

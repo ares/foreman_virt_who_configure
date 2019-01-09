@@ -26,8 +26,12 @@ function virt_who_update_listing_mode() {
 
 function virt_who_update_hypervisor_fields() {
   selected_type = $('#foreman_virt_who_configure_config_hypervisor_type').val();
+  var element = $('#foreman_virt_who_configure_config_hypervisor_username');
+  element.closest('.form-group').toggle(selected_type != 'kubevirt');
   var element = $('#foreman_virt_who_configure_config_hypervisor_password');
-  element.closest('.form-group').toggle(selected_type != 'libvirt');
+  element.closest('.form-group').toggle(selected_type != 'libvirt' && selected_type != 'kubevirt');
+  var element = $('#foreman_virt_who_configure_config_kubeconfig_path');
+  element.closest('.form-group').toggle(selected_type == 'kubevirt');
 }
 
 function virt_who_update_credentials_help() {

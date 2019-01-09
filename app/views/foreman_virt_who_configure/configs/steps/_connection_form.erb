@@ -20,4 +20,5 @@
   <%= checkbox_f f, :debug, { :label => _('Enable debugging output') }.merge(inline_help_popover(_("Different debug value can't be set per hypervisor, therefore it will affect all other deployed configurations on the host on which this configuration will be deployed."))) %>
   <%= text_f f, :proxy, inline_help_popover(_('HTTP proxy that should be used for communication between the server on which virt-who is running and the hypervisors and virtualization managers. Leave this blank if no proxy is used.')).merge(:label => _('HTTP proxy')) %>
   <%= text_f f, :no_proxy, inline_help_popover(_('A comma-separated list of hostnames or domains or ip addresses to ignore proxy settings for. Optionally this may be set to <code>*</code> to bypass proxy settings for all hostnames domains or ip addresses.')).merge(:label => _('Ignore proxy')) %>
+  <%= text_f f, :kubeconfig_path, inline_help_popover(_('Configuration file containing details about how to connect to the cluster and authentication details')).merge(:label => _('Path to kubeconfig file')) %>
 </div>
